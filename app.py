@@ -80,10 +80,12 @@ def create_conversation_page(conversation_name):
 if "conversations" not in st.session_state:
     st.session_state["conversations"] = {}
 
-# Créer une page pour chaque conversation
+# Créer une page pour chaque conversation avec un nom unique
 pages = []
 for conversation_name in st.session_state["conversations"].keys():
-    pages.append(lambda name=conversation_name: create_conversation_page(name))
+    def conversation_page(name=conversation_name):  # Utiliser une fonction nommée dynamiquement
+        create_conversation_page(name)
+    pages.append(conversation_page)
 
 # Ajouter une page pour créer une nouvelle conversation
 def new_conversation_page():
