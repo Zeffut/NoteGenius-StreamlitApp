@@ -9,16 +9,52 @@ st.set_page_config(page_title="NoteGenius", page_icon="📚")
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 
-# Encapsuler l'upload dans un conteneur pour pouvoir le masquer après
-upload_container = st.empty()
-pdf_files = upload_container.file_uploader("Chargez vos fichiers PDF de votre cours", type="pdf", accept_multiple_files=True)
-if not pdf_files:
-    st.warning("Veuillez charger les fichiers PDF de votre cours afin de pouvoir discuter avec le chat.")
-    st.stop()
-upload_container.empty()
+# Gestion des conversations multiples
+if "conversations" not in st.session_state:
+    st.session_state["conversations"] = {}  # Dictionnaire pour stocker les conversations
+if "current_conversation" not in st.session_state:
+    st.session_state["current_conversation"] = None  # Conversation active
 
-# Traiter les PDF uniquement une fois et stocker le résultat en session_state
-if "pdf_excerpt" not in st.session_state:
+# Barre latérale pour gérer les conversations
+with st.sidebar:
+    st.title("Conversations")
+    conversation_names = list(st.session_state["conversations"].keys())
+    selected_conversation = st.selectbox(
+        "Sélectionnez une conversation", options=["Nouvelle conversation"] + conversation_names
+    )
+
+    if selected_conversation == "Nouvelle conversation":
+        new_conversation_name = st.text_input("Nom de la nouvelle conversation")
+        if st.button("Créer"):
+            if new_conversation_name and new_conversation_name not in st.session_state["conversations"]:
+                st.session_state["conversations"][new_conversation_name] = {
+                    "messages": [],
+                    "pdf_excerpt": ""
+                }
+                st.session_state["current_conversation"] = new_conversation_name
+                st.experimental_rerun()
+    else:
+        st.session_state["current_conversation"] = selected_conversation
+
+# Vérifier si une conversation est active
+if not st.session_state["current_conversation"]:
+    st.warning("Veuillez sélectionner ou créer une conversation.")
+    st.stop()
+
+# Charger la conversation active
+current_conversation = st.session_state["conversations"][st.session_state["current_conversation"]]
+
+# Gestion des fichiers PDF pour la conversation active
+if not current_conversation["pdf_excerpt"]:
+    upload_container = st.empty()
+    pdf_files = upload_container.file_uploader(
+        "Chargez vos fichiers PDF de votre cours", type="pdf", accept_multiple_files=True
+    )
+    if not pdf_files:
+        st.warning("Veuillez charger les fichiers PDF de votre cours pour cette conversation.")
+        st.stop()
+    upload_container.empty()
+
     with st.spinner("Lecture des fichiers PDF et préparation de la première requête..."):
         pdf_text = ""
         for pdf in pdf_files:
@@ -26,41 +62,43 @@ if "pdf_excerpt" not in st.session_state:
             for page in reader.pages:
                 pdf_text += page.extract_text() or ""
             pdf_text += "\n"
-        time.sleep(1)  # simulation supplémentaire de traitement
-        st.session_state["pdf_excerpt"] = pdf_text[:4000]  # Ajuster la limite selon vos besoins
+        time.sleep(1)
+        current_conversation["pdf_excerpt"] = pdf_text[:4000]  # Ajuster la limite selon vos besoins
 
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [
+# Initialiser les messages pour la conversation active
+if "messages" not in current_conversation or not current_conversation["messages"]:
+    current_conversation["messages"] = [
         {"role": "assistant", "content": "Vous pouvez désormais poser vos questions sur le(s) cours fournis."}
     ]
 
-for msg in st.session_state.messages:
+# Afficher les messages de la conversation active
+for msg in current_conversation["messages"]:
     st.chat_message(msg["role"]).write(msg["content"])
 
-# Supprimer la mise en page en colonnes avec le bouton d'import supplémentaire et revenir à un st.chat_input classique
+# Zone de saisie pour poser des questions
 prompt = st.chat_input(placeholder="Posez votre question ici...")
 
 if prompt:
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    current_conversation["messages"].append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
 
     if not openai_api_key:
         st.info("Please add your OpenAI API key to continue.")
         st.stop()
-    
-    if not st.session_state.get("pdf_context_sent", False):
-        prompt_with_context = f"Contenu des cours (extrait):\n{st.session_state['pdf_excerpt']}\nQuestion: {prompt}"
-        st.session_state["pdf_context_sent"] = True
+
+    if not current_conversation.get("pdf_context_sent", False):
+        prompt_with_context = f"Contenu des cours (extrait):\n{current_conversation['pdf_excerpt']}\nQuestion: {prompt}"
+        current_conversation["pdf_context_sent"] = True
     else:
         prompt_with_context = prompt
 
     # Limiter la longueur du prompt
-    max_context_length = 138000
+    max_context_length = 3500
     if len(prompt_with_context) > max_context_length:
         prompt_with_context = prompt_with_context[:max_context_length]
-    
+
     llm = ChatOpenAI(model_name="gpt-4o-mini", openai_api_key=openai_api_key, streaming=True)
     with st.chat_message("assistant"):
         response = llm.predict(prompt_with_context)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        current_conversation["messages"].append({"role": "assistant", "content": response})
         st.write(response)
