@@ -84,12 +84,23 @@ if "conversations" not in st.session_state:
 def new_conversation_page():
     st.title("Nouvelle Conversation")
     st.write("Cliquez sur le bouton ci-dessous pour créer une nouvelle conversation.")
-    if st.button("Créer une nouvelle conversation"):
-        new_conversation_name = f"Conversation {len(st.session_state['conversations']) + 1}"
+    pdf_files = st.file_uploader(
+        "Chargez vos fichiers PDF de votre cours", type="pdf", accept_multiple_files=True
+    )
+    if pdf_files and st.button("Créer une nouvelle conversation"):
+        # Utiliser le nom du premier fichier PDF comme nom de la conversation
+        first_pdf_name = pdf_files[0].name if pdf_files else f"Conversation {len(st.session_state['conversations']) + 1}"
+        new_conversation_name = first_pdf_name
         st.session_state["conversations"][new_conversation_name] = {
             "messages": [],
             "pdf_excerpt": ""
         }
+        # Charger le contenu du premier fichier PDF
+        pdf_text = ""
+        reader = PyPDF2.PdfReader(pdf_files[0])
+        for page in reader.pages:
+            pdf_text += page.extract_text() or ""
+        st.session_state["conversations"][new_conversation_name]["pdf_excerpt"] = pdf_text[:8000]
         st.rerun()
 
 # Créer une page pour chaque conversation avec un nom unique
