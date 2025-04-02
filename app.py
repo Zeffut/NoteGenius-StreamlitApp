@@ -37,7 +37,25 @@ if "messages" not in st.session_state:
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
-if prompt := st.chat_input(placeholder="Posez votre question ici..."):
+# Remplacer l'appel st.chat_input par deux colonnes : la zone de saisie et le bouton trombone pour importer des fichiers supplémentaires
+col_chat, col_file = st.columns([4, 1])
+with col_chat:
+    prompt = st.chat_input(placeholder="Posez votre question ici...")
+with col_file:
+    extra_files = st.file_uploader("📎", type="pdf", accept_multiple_files=True, key="extra_files")
+    if extra_files:
+        with st.spinner("Lecture des fichiers supplémentaires..."):
+            extra_text = ""
+            for pdf in extra_files:
+                reader = PyPDF2.PdfReader(pdf)
+                for page in reader.pages:
+                    extra_text += page.extract_text() or ""
+                extra_text += "\n"
+            time.sleep(1)
+            # Append text from additional files to l'extrait existant
+            st.session_state["pdf_excerpt"] += extra_text[:4000]
+
+if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
 
@@ -51,4 +69,3 @@ if prompt := st.chat_input(placeholder="Posez votre question ici..."):
         response = llm.predict(prompt_with_context)
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.write(response)
-
