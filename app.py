@@ -27,8 +27,9 @@ with st.spinner("Lecture des fichiers PDF et préparation de la première requê
         for page in reader.pages:
             pdf_text += page.extract_text() or ""
         pdf_text += "\n"
-    # Simulation supplémentaire de traitement
-    time.sleep(1)
+    time.sleep(1)  # simulation supplémentaire de traitement
+    # Limiter le texte pour éviter un prompt trop volumineux
+    pdf_excerpt = pdf_text[:4000]  # Ajuster la limite selon vos besoins
 
 if "messages" not in st.session_state:
     st.session_state["messages"] = [
@@ -48,8 +49,9 @@ if prompt := st.chat_input(placeholder="Posez votre question ici..."):
 
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, streaming=True)
     with st.chat_message("assistant"):
-        # Combiner le contenu des PDFs avec la question de l'utilisateur pour fournir du contexte à l'IA
-        prompt_with_context = f"Contenu des cours:\n{pdf_text}\nQuestion: {prompt}"
+        # Utiliser pdf_excerpt pour fournir le contexte à l'IA
+        prompt_with_context = f"Contenu des cours (extrait):\n{pdf_excerpt}\nQuestion: {prompt}"
         response = llm.predict(prompt_with_context)
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.write(response)
+
