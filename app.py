@@ -7,6 +7,12 @@ openai_api_key = os.environ.get("OPENAI_API_KEY")
 
 st.title("🔎 NoteGenius - Chat with your Lessons")
 
+# Ajouter l'upload des fichiers PDF de cours
+pdf_files = st.file_uploader("Chargez vos fichiers PDF de votre cours", type="pdf", accept_multiple_files=True)
+if not pdf_files:
+    st.warning("Veuillez charger les fichiers PDF de votre cours afin de pouvoir discuter avec le chat.")
+    st.stop()
+
 if "messages" not in st.session_state:
     st.session_state["messages"] = [
         {"role": "assistant", "content": "Hi, I'm a chatbot who can chat with the OpenAI API. How can I help you?"}
