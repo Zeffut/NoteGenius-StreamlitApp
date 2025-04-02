@@ -59,7 +59,7 @@ if prompt:
     if len(prompt_with_context) > max_context_length:
         prompt_with_context = prompt_with_context[:max_context_length]
     
-    llm = ChatOpenAI(model_name="gpt-4o mini", openai_api_key=openai_api_key, streaming=True)
+    llm = ChatOpenAI(model_name="gpt-4o-mini", openai_api_key=openai_api_key, streaming=True)
     with st.chat_message("assistant"):
         response = llm.predict(prompt_with_context)
         st.session_state.messages.append({"role": "assistant", "content": response})
