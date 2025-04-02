@@ -93,9 +93,9 @@ def new_conversation_page():
         st.rerun()
 
 # Créer une page pour chaque conversation avec un nom unique
-pages = [("Nouvelle Conversation", new_conversation_page)]
+pages = [new_conversation_page]
 for conversation_name in st.session_state["conversations"].keys():
-    pages.append((conversation_name, lambda name=conversation_name: create_conversation_page(name)))
+    pages.append(lambda name=conversation_name: create_conversation_page(name))
 
 # Configuration de la navigation
 pg = st.navigation(pages)
