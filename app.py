@@ -67,7 +67,8 @@ if not current_conversation["pdf_excerpt"]:
                 pdf_text += page.extract_text() or ""
             pdf_text += "\n"
         time.sleep(1)
-        current_conversation["pdf_excerpt"] = pdf_text[:4000]  # Ajuster la limite selon vos besoins
+        # Augmenter la limite pour inclure plus de contenu si nécessaire
+        current_conversation["pdf_excerpt"] = pdf_text[:8000]  # Ajuster la limite selon vos besoins
 
 # Initialiser les messages pour la conversation active
 if "messages" not in current_conversation or not current_conversation["messages"]:
@@ -90,7 +91,7 @@ if prompt:
         st.info("Please add your OpenAI API key to continue.")
         st.stop()
 
-    # Construire le contexte de la conversation en incluant tous les messages précédents
+    # Construire le contexte de la conversation en incluant les documents et les messages précédents
     conversation_context = f"Contenu des cours (extrait):\n{current_conversation['pdf_excerpt']}\n\n"
     for message in current_conversation["messages"]:
         role = "Utilisateur" if message["role"] == "user" else "Assistant"
@@ -100,7 +101,7 @@ if prompt:
     prompt_with_context = f"{conversation_context}Utilisateur: {prompt}\nAssistant:"
 
     # Limiter la longueur du prompt pour éviter les erreurs
-    max_context_length = 3500
+    max_context_length = 138000
     if len(prompt_with_context) > max_context_length:
         prompt_with_context = prompt_with_context[-max_context_length:]
 
