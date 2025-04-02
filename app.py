@@ -90,16 +90,19 @@ if prompt:
         st.info("Please add your OpenAI API key to continue.")
         st.stop()
 
-    if not current_conversation.get("pdf_context_sent", False):
-        prompt_with_context = f"Contenu des cours (extrait):\n{current_conversation['pdf_excerpt']}\nQuestion: {prompt}"
-        current_conversation["pdf_context_sent"] = True
-    else:
-        prompt_with_context = prompt
+    # Construire le contexte de la conversation en incluant tous les messages précédents
+    conversation_context = ""
+    for message in current_conversation["messages"]:
+        role = "Utilisateur" if message["role"] == "user" else "Assistant"
+        conversation_context += f"{role}: {message['content']}\n"
 
-    # Limiter la longueur du prompt
+    # Ajouter le nouveau message utilisateur au contexte
+    prompt_with_context = f"{conversation_context}Utilisateur: {prompt}\nAssistant:"
+
+    # Limiter la longueur du prompt pour éviter les erreurs
     max_context_length = 3500
     if len(prompt_with_context) > max_context_length:
-        prompt_with_context = prompt_with_context[:max_context_length]
+        prompt_with_context = prompt_with_context[-max_context_length:]
 
     llm = ChatOpenAI(model_name="gpt-4o-mini", openai_api_key=openai_api_key, streaming=True)
     with st.chat_message("assistant"):
