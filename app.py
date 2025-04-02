@@ -8,11 +8,14 @@ openai_api_key = os.environ.get("OPENAI_API_KEY")
 
 st.title("🔎 NoteGenius - Chat with your Lessons")
 
-# Ajouter l'upload des fichiers PDF de cours
-pdf_files = st.file_uploader("Chargez vos fichiers PDF de votre cours", type="pdf", accept_multiple_files=True)
+# Encapsuler l'upload dans un conteneur pour pouvoir le masquer après
+upload_container = st.empty()
+pdf_files = upload_container.file_uploader("Chargez vos fichiers PDF de votre cours", type="pdf", accept_multiple_files=True)
 if not pdf_files:
     st.warning("Veuillez charger les fichiers PDF de votre cours afin de pouvoir discuter avec le chat.")
     st.stop()
+# Masquer la zone d'upload une fois les fichiers importés
+upload_container.empty()
 
 # Ajouter un spinner pendant la lecture des PDF et la préparation de la requête initiale
 with st.spinner("Lecture des fichiers PDF et préparation de la première requête..."):
