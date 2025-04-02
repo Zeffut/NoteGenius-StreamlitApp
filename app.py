@@ -91,7 +91,7 @@ if prompt:
         st.stop()
 
     # Construire le contexte de la conversation en incluant tous les messages précédents
-    conversation_context = ""
+    conversation_context = f"Contenu des cours (extrait):\n{current_conversation['pdf_excerpt']}\n\n"
     for message in current_conversation["messages"]:
         role = "Utilisateur" if message["role"] == "user" else "Assistant"
         conversation_context += f"{role}: {message['content']}\n"
