@@ -35,9 +35,11 @@ with st.sidebar:
             "messages": [],
             "pdf_excerpt": ""
         }
+        # Mettre à jour la conversation active et forcer un rafraîchissement
         st.session_state["current_conversation"] = new_conversation_name
-        st.rerun()
+        st.rerun()  # Rafraîchir la page pour afficher la nouvelle conversation
 
+    # Mettre à jour la conversation active si une autre est sélectionnée
     st.session_state["current_conversation"] = selected_conversation
 
 # Vérifier si une conversation est active
