@@ -33,7 +33,7 @@ def main_page():
         st.session_state["conversations"][new_conversation_name]["pdf_excerpt"] = pdf_text[:8000]
         # Rediriger vers la nouvelle conversation
         st.session_state["page"] = new_conversation_name
-        st.experimental_rerun()
+        st.rerun()
 
 # Fonction pour créer une page de conversation
 def create_conversation_page(conversation_name):
