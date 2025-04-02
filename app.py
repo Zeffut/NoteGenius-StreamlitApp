@@ -8,6 +8,12 @@ st.set_page_config(page_title="NoteGenius", page_icon="📚")
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 
+# Page principale
+def main_page():
+    st.title("Bienvenue sur NoteGenius")
+    st.write("Utilisez la barre de navigation pour créer ou accéder à vos conversations.")
+
+# Fonction pour créer une page de conversation
 def create_conversation_page(conversation_name):
     st.title(f"Conversation: {conversation_name}")
 
@@ -76,10 +82,6 @@ def create_conversation_page(conversation_name):
             current_conversation["messages"].append({"role": "assistant", "content": response})
             st.write(response)
 
-# Initialiser les conversations dans l'état de session
-if "conversations" not in st.session_state:
-    st.session_state["conversations"] = {}
-
 # Ajouter une page pour créer une nouvelle conversation
 def new_conversation_page():
     st.title("Nouvelle Conversation")
@@ -103,6 +105,10 @@ def new_conversation_page():
         st.session_state["conversations"][new_conversation_name]["pdf_excerpt"] = pdf_text[:8000]
         st.rerun()
 
+# Initialiser les conversations dans l'état de session
+if "conversations" not in st.session_state:
+    st.session_state["conversations"] = {}
+
 # Créer une page pour chaque conversation avec un nom unique
 pages = [new_conversation_page]
 for conversation_name in st.session_state["conversations"].keys():
@@ -113,6 +119,10 @@ for conversation_name in st.session_state["conversations"].keys():
         return page
     pages.append(generate_page(conversation_name))
 
-# Configuration de la navigation
-pg = st.navigation(pages)
-pg.run()
+# Afficher la page principale si aucune navigation n'est active
+if "page" not in st.session_state:
+    main_page()
+else:
+    # Configuration de la navigation
+    pg = st.navigation(pages)
+    pg.run()
