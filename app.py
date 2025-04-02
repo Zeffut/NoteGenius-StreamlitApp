@@ -1,51 +1,18 @@
 import streamlit as st
 import os
-import time  # ajout de l'import pour simuler la lecture des PDF
-import PyPDF2  # nouvel import pour extraire le texte des PDFs
-
+import time
+import PyPDF2
 from langchain.chat_models import ChatOpenAI
 
 st.set_page_config(page_title="NoteGenius", page_icon="📚")
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 
-def page_1():
-    st.title("NoteGenius - Page 1")
-
-    # Gestion des conversations multiples
-    if "conversations" not in st.session_state:
-        st.session_state["conversations"] = {}  # Dictionnaire pour stocker les conversations
-
-    # Barre latérale pour gérer les conversations
-    with st.sidebar:
-        st.title("Conversations")
-        conversation_names = list(st.session_state["conversations"].keys())
-
-        # Navigation entre les conversations
-        selected_conversation = st.selectbox(
-            "Sélectionnez une conversation", options=conversation_names
-        )
-
-        if st.button("Nouvelle conversation"):
-            new_conversation_name = f"Conversation {len(st.session_state['conversations']) + 1}"
-            st.session_state["conversations"][new_conversation_name] = {
-                "messages": [],
-                "pdf_excerpt": ""
-            }
-            # Naviguer automatiquement vers la nouvelle conversation
-            st.set_query_params(conversation=new_conversation_name)
-            st.rerun()
-
-    # Récupérer la conversation active depuis les paramètres de navigation
-    query_params = st.query_params
-    current_conversation_name = query_params.get("conversation", [None])[0]
-
-    if not current_conversation_name or current_conversation_name not in st.session_state["conversations"]:
-        st.warning("Veuillez sélectionner ou créer une conversation.")
-        st.stop()
+def create_conversation_page(conversation_name):
+    st.title(f"Conversation: {conversation_name}")
 
     # Charger la conversation active
-    current_conversation = st.session_state["conversations"][current_conversation_name]
+    current_conversation = st.session_state["conversations"][conversation_name]
 
     # Gestion des fichiers PDF pour la conversation active
     if not current_conversation["pdf_excerpt"]:
@@ -66,7 +33,6 @@ def page_1():
                     pdf_text += page.extract_text() or ""
                 pdf_text += "\n"
             time.sleep(1)
-            # Augmenter la limite pour inclure plus de contenu si nécessaire
             current_conversation["pdf_excerpt"] = pdf_text[:8000]  # Ajuster la limite selon vos besoins
 
     # Initialiser les messages pour la conversation active
@@ -110,10 +76,28 @@ def page_1():
             current_conversation["messages"].append({"role": "assistant", "content": response})
             st.write(response)
 
-def page_2():
-    st.title("Page 2")
-    st.write("Contenu de la deuxième page.")
+# Initialiser les conversations dans l'état de session
+if "conversations" not in st.session_state:
+    st.session_state["conversations"] = {}
+
+# Créer une page pour chaque conversation
+pages = []
+for conversation_name in st.session_state["conversations"].keys():
+    pages.append(lambda name=conversation_name: create_conversation_page(name))
+
+# Ajouter une page pour créer une nouvelle conversation
+def new_conversation_page():
+    st.title("Nouvelle Conversation")
+    if st.button("Créer une nouvelle conversation"):
+        new_conversation_name = f"Conversation {len(st.session_state['conversations']) + 1}"
+        st.session_state["conversations"][new_conversation_name] = {
+            "messages": [],
+            "pdf_excerpt": ""
+        }
+        st.experimental_rerun()
+
+pages.insert(0, new_conversation_page)
 
 # Configuration de la navigation
-pg = st.navigation([page_1, page_2])
+pg = st.navigation(pages)
 pg.run()
