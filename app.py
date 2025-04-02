@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import time  # ajout de l'import pour simuler la lecture des PDF
+import PyPDF2  # nouvel import pour extraire le texte des PDFs
 
 from langchain.chat_models import ChatOpenAI
 
@@ -17,14 +18,21 @@ if not pdf_files:
 # Masquer la zone d'upload une fois les fichiers importés
 upload_container.empty()
 
+# Préparer une variable pour contenir le texte extrait des PDFs
+pdf_text = ""
 # Ajouter un spinner pendant la lecture des PDF et la préparation de la requête initiale
 with st.spinner("Lecture des fichiers PDF et préparation de la première requête..."):
-    # ...traitement des PDF, par exemple extraire leur contenu...
-    time.sleep(2)  # simulation de lecture et traitement
+    for pdf in pdf_files:
+        reader = PyPDF2.PdfReader(pdf)
+        for page in reader.pages:
+            pdf_text += page.extract_text() or ""
+        pdf_text += "\n"
+    # Simulation supplémentaire de traitement
+    time.sleep(1)
 
 if "messages" not in st.session_state:
     st.session_state["messages"] = [
-        {"role": "assistant", "content": "Hi, I'm a chatbot who can chat with the OpenAI API. How can I help you?"}
+        {"role": "assistant", "content": "Vous pouvez désormais poser vos questions sur le(s) cours fournis."}
     ]
 
 for msg in st.session_state.messages:
@@ -40,6 +48,8 @@ if prompt := st.chat_input(placeholder="Posez votre question ici..."):
 
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, streaming=True)
     with st.chat_message("assistant"):
-        response = llm.predict(prompt)
+        # Combiner le contenu des PDFs avec la question de l'utilisateur pour fournir du contexte à l'IA
+        prompt_with_context = f"Contenu des cours:\n{pdf_text}\nQuestion: {prompt}"
+        response = llm.predict(prompt_with_context)
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.write(response)
