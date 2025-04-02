@@ -45,7 +45,7 @@ if prompt := st.chat_input(placeholder="Posez votre question ici..."):
         st.info("Please add your OpenAI API key to continue.")
         st.stop()
 
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, streaming=True)
+    llm = ChatOpenAI(model_name="GPT-4o mini", openai_api_key=openai_api_key, streaming=True)
     with st.chat_message("assistant"):
         prompt_with_context = f"Contenu des cours (extrait):\n{st.session_state['pdf_excerpt']}\nQuestion: {prompt}"
         response = llm.predict(prompt_with_context)
