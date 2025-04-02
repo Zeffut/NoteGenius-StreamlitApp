@@ -5,7 +5,7 @@ import PyPDF2  # nouvel import pour extraire le texte des PDFs
 
 from langchain.chat_models import ChatOpenAI
 
-st.set_page_config(title="NoteGenius", page_icon="📚")
+st.set_page_config(page_title="NoteGenius", page_icon="📚")
 
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 
