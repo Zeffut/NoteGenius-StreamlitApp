@@ -80,16 +80,10 @@ def create_conversation_page(conversation_name):
 if "conversations" not in st.session_state:
     st.session_state["conversations"] = {}
 
-# Créer une page pour chaque conversation avec un nom unique
-pages = []
-for conversation_name in st.session_state["conversations"].keys():
-    def conversation_page(name=conversation_name):  # Utiliser une fonction nommée dynamiquement
-        create_conversation_page(name)
-    pages.append(conversation_page)
-
 # Ajouter une page pour créer une nouvelle conversation
 def new_conversation_page():
     st.title("Nouvelle Conversation")
+    st.write("Cliquez sur le bouton ci-dessous pour créer une nouvelle conversation.")
     if st.button("Créer une nouvelle conversation"):
         new_conversation_name = f"Conversation {len(st.session_state['conversations']) + 1}"
         st.session_state["conversations"][new_conversation_name] = {
@@ -98,7 +92,10 @@ def new_conversation_page():
         }
         st.rerun()
 
-pages.insert(0, new_conversation_page)
+# Créer une page pour chaque conversation avec un nom unique
+pages = [("Nouvelle Conversation", new_conversation_page)]
+for conversation_name in st.session_state["conversations"].keys():
+    pages.append((conversation_name, lambda name=conversation_name: create_conversation_page(name)))
 
 # Configuration de la navigation
 pg = st.navigation(pages)
