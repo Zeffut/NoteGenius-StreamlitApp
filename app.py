@@ -107,7 +107,10 @@ def new_conversation_page():
 pages = [new_conversation_page]
 for conversation_name in st.session_state["conversations"].keys():
     def generate_page(name):
-        return lambda: create_conversation_page(name)
+        def page():
+            create_conversation_page(name)
+        page.__name__ = name  # Attribuer un nom unique à la fonction
+        return page
     pages.append(generate_page(conversation_name))
 
 # Configuration de la navigation
