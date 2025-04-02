@@ -17,7 +17,7 @@ def main_page():
     pdf_files = st.file_uploader(
         "Chargez vos fichiers PDF de votre cours", type="pdf", accept_multiple_files=True
     )
-    if pdf_files and st.button("Créer une conversation"):
+    if pdf_files:
         # Utiliser le nom du premier fichier PDF comme nom de la conversation
         first_pdf_name = pdf_files[0].name
         new_conversation_name = first_pdf_name
@@ -111,7 +111,7 @@ def new_conversation_page():
     pdf_files = st.file_uploader(
         "Chargez vos fichiers PDF de votre cours", type="pdf", accept_multiple_files=True
     )
-    if pdf_files and st.button("Créer une nouvelle conversation"):
+    if pdf_files:
         # Utiliser le nom du premier fichier PDF comme nom de la conversation
         first_pdf_name = pdf_files[0].name if pdf_files else f"Conversation {len(st.session_state['conversations']) + 1}"
         new_conversation_name = first_pdf_name
