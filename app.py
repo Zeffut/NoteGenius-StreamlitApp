@@ -36,7 +36,7 @@ with st.sidebar:
             "pdf_excerpt": ""
         }
         st.session_state["current_conversation"] = new_conversation_name
-        st.experimental_rerun()
+        st.rerun()
 
     st.session_state["current_conversation"] = selected_conversation
 
