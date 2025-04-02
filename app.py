@@ -13,28 +13,32 @@ openai_api_key = os.environ.get("OPENAI_API_KEY")
 if "conversations" not in st.session_state:
     st.session_state["conversations"] = {}  # Dictionnaire pour stocker les conversations
 if "current_conversation" not in st.session_state:
-    st.session_state["current_conversation"] = None  # Conversation active
+    # Créer une première conversation par défaut si aucune n'existe
+    default_conversation_name = f"Conversation {len(st.session_state['conversations']) + 1}"
+    st.session_state["conversations"][default_conversation_name] = {
+        "messages": [],
+        "pdf_excerpt": ""
+    }
+    st.session_state["current_conversation"] = default_conversation_name
 
 # Barre latérale pour gérer les conversations
 with st.sidebar:
     st.title("Conversations")
     conversation_names = list(st.session_state["conversations"].keys())
     selected_conversation = st.selectbox(
-        "Sélectionnez une conversation", options=["Nouvelle conversation"] + conversation_names
+        "Sélectionnez une conversation", options=conversation_names
     )
 
-    if selected_conversation == "Nouvelle conversation":
-        new_conversation_name = st.text_input("Nom de la nouvelle conversation")
-        if st.button("Créer"):
-            if new_conversation_name and new_conversation_name not in st.session_state["conversations"]:
-                st.session_state["conversations"][new_conversation_name] = {
-                    "messages": [],
-                    "pdf_excerpt": ""
-                }
-                st.session_state["current_conversation"] = new_conversation_name
-                st.experimental_rerun()
-    else:
-        st.session_state["current_conversation"] = selected_conversation
+    if st.button("Nouvelle conversation"):
+        new_conversation_name = f"Conversation {len(st.session_state['conversations']) + 1}"
+        st.session_state["conversations"][new_conversation_name] = {
+            "messages": [],
+            "pdf_excerpt": ""
+        }
+        st.session_state["current_conversation"] = new_conversation_name
+        st.experimental_rerun()
+
+    st.session_state["current_conversation"] = selected_conversation
 
 # Vérifier si une conversation est active
 if not st.session_state["current_conversation"]:
