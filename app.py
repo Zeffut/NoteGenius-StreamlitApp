@@ -48,13 +48,17 @@ if prompt:
         st.info("Please add your OpenAI API key to continue.")
         st.stop()
     
-    # Envoyer le contenu des documents uniquement lors du premier message
     if not st.session_state.get("pdf_context_sent", False):
         prompt_with_context = f"Contenu des cours (extrait):\n{st.session_state['pdf_excerpt']}\nQuestion: {prompt}"
         st.session_state["pdf_context_sent"] = True
     else:
         prompt_with_context = prompt
 
+    # Limiter la longueur du prompt
+    max_context_length = 4000
+    if len(prompt_with_context) > max_context_length:
+        prompt_with_context = prompt_with_context[:max_context_length]
+    
     llm = ChatOpenAI(model_name="GPT-4o mini", openai_api_key=openai_api_key, streaming=True)
     with st.chat_message("assistant"):
         response = llm.predict(prompt_with_context)
