@@ -30,7 +30,7 @@ with st.sidebar:
             "pdf_excerpt": ""
         }
         # Naviguer automatiquement vers la nouvelle conversation
-        st.set_query_params(conversation=new_conversation_name)
+        st.experimental_set_query_params(conversation=new_conversation_name)
         st.rerun()
 
 # Récupérer la conversation active depuis les paramètres de navigation
