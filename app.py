@@ -1,43 +1,39 @@
 import streamlit as st
-import openai
 import os
 
-# Configurez votre clé API OpenAI
-openai.api_key = os.environ.get("OPENAI_API_KEY")
-if not openai.api_key:
-    st.error("Clé API OpenAI non définie. Veuillez la définir dans la variable d'environnement OPENAI_API_KEY.")
-    st.stop()
+from langchain.agents import initialize_agent, AgentType
+from langchain.callbacks import StreamlitCallbackHandler
+from langchain.chat_models import ChatOpenAI
+from langchain.tools import DuckDuckGoSearchRun
 
-st.title("Chat IA avec OpenAI")
 
-# Initialiser l'historique de conversation dans session_state
+openai_api_key = os.environ.get("OPENAI_API_KEY")
+
+st.title("🔎 NoteGenius - Chat with your Lessons")
+
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "system", "content": "Vous êtes un assistant IA."}
+    st.session_state["messages"] = [
+        {"role": "assistant", "content": "Hi, I'm a chatbot who can search the web. How can I help you?"}
     ]
 
-# Zone de texte pour entrer le message de l'utilisateur
-user_input = st.text_input("Votre message :", key="input")
+for msg in st.session_state.messages:
+    st.chat_message(msg["role"]).write(msg["content"])
 
-if st.button("Envoyer") and user_input:
-    # Ajout du message utilisateur à l'historique
-    st.session_state.messages.append({"role": "user", "content": user_input})
+if prompt := st.chat_input(placeholder="Who won the Women's U.S. Open in 2018?"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.chat_message("user").write(prompt)
 
-    # Appel à l'API OpenAI
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=st.session_state.messages
-        )
-        reply = response.choices[0].message.content.strip()
-        # Ajout de la réponse dans l'historique
-        st.session_state.messages.append({"role": "assistant", "content": reply})
-    except Exception as e:
-        st.error(f"Erreur lors de la communication avec l'API OpenAI : {e}")
+    if not openai_api_key:
+        st.info("Please add your OpenAI API key to continue.")
+        st.stop()
 
-# Afficher l'historique de la conversation
-for message in st.session_state.messages:
-    if message["role"] == "user":
-        st.markdown(f"**Vous :** {message['content']}")
-    elif message["role"] == "assistant":
-        st.markdown(f"**Assistant :** {message['content']}")
+    llm = ChatOpenAI(model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, streaming=True)
+    search = DuckDuckGoSearchRun(name="Search")
+    search_agent = initialize_agent(
+        [search], llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, handle_parsing_errors=True
+    )
+    with st.chat_message("assistant"):
+        st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
+        response = search_agent.run(st.session_state.messages, callbacks=[st_cb])
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.write(response)
