@@ -126,7 +126,7 @@ def new_conversation_page():
             pdf_text += page.extract_text() or ""
         st.session_state["conversations"][new_conversation_name]["pdf_excerpt"] = pdf_text[:8000]
         st.rerun()
-        st.switch_page(new_conversation_name)
+        st.switch_page(st.Page(new_conversation_name))
 
 # Initialiser les conversations dans l'état de session
 if "conversations" not in st.session_state:
