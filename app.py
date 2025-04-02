@@ -55,7 +55,7 @@ if prompt:
         prompt_with_context = prompt
 
     # Limiter la longueur du prompt
-    max_context_length = 4000
+    max_context_length = 138000
     if len(prompt_with_context) > max_context_length:
         prompt_with_context = prompt_with_context[:max_context_length]
     
