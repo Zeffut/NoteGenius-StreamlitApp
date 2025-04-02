@@ -5,9 +5,9 @@ import PyPDF2  # nouvel import pour extraire le texte des PDFs
 
 from langchain.chat_models import ChatOpenAI
 
-openai_api_key = os.environ.get("OPENAI_API_KEY")
+st.set_page_config(title="NoteGenius", page_icon="📚")
 
-st.title("🔎 NoteGenius - Chat with your Lessons")
+openai_api_key = os.environ.get("OPENAI_API_KEY")
 
 # Encapsuler l'upload dans un conteneur pour pouvoir le masquer après
 upload_container = st.empty()
