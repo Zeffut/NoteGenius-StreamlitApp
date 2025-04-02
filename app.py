@@ -25,7 +25,7 @@ if "current_conversation" not in st.session_state:
 with st.sidebar:
     st.title("Conversations")
     conversation_names = list(st.session_state["conversations"].keys())
-    selected_conversation = st.selectbox(
+    selected_conversation = st.radio(
         "Sélectionnez une conversation", options=conversation_names
     )
 
