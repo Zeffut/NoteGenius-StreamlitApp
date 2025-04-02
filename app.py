@@ -12,20 +12,14 @@ openai_api_key = os.environ.get("OPENAI_API_KEY")
 # Gestion des conversations multiples
 if "conversations" not in st.session_state:
     st.session_state["conversations"] = {}  # Dictionnaire pour stocker les conversations
-if "current_conversation" not in st.session_state:
-    # Créer une première conversation par défaut si aucune n'existe
-    default_conversation_name = f"Conversation {len(st.session_state['conversations']) + 1}"
-    st.session_state["conversations"][default_conversation_name] = {
-        "messages": [],
-        "pdf_excerpt": ""
-    }
-    st.session_state["current_conversation"] = default_conversation_name
 
 # Barre latérale pour gérer les conversations
 with st.sidebar:
     st.title("Conversations")
     conversation_names = list(st.session_state["conversations"].keys())
-    selected_conversation = st.radio(
+
+    # Navigation entre les conversations
+    selected_conversation = st.selectbox(
         "Sélectionnez une conversation", options=conversation_names
     )
 
@@ -35,20 +29,20 @@ with st.sidebar:
             "messages": [],
             "pdf_excerpt": ""
         }
-        # Mettre à jour la conversation active et forcer un rafraîchissement
-        st.session_state["current_conversation"] = new_conversation_name
-        st.rerun()  # Rafraîchir la page pour afficher la nouvelle conversation
+        # Naviguer automatiquement vers la nouvelle conversation
+        st.set_query_params(conversation=new_conversation_name)
+        st.rerun()
 
-    # Mettre à jour la conversation active si une autre est sélectionnée
-    st.session_state["current_conversation"] = selected_conversation
+# Récupérer la conversation active depuis les paramètres de navigation
+query_params = st.get_query_params()
+current_conversation_name = query_params.get("conversation", [None])[0]
 
-# Vérifier si une conversation est active
-if not st.session_state["current_conversation"]:
+if not current_conversation_name or current_conversation_name not in st.session_state["conversations"]:
     st.warning("Veuillez sélectionner ou créer une conversation.")
     st.stop()
 
 # Charger la conversation active
-current_conversation = st.session_state["conversations"][st.session_state["current_conversation"]]
+current_conversation = st.session_state["conversations"][current_conversation_name]
 
 # Gestion des fichiers PDF pour la conversation active
 if not current_conversation["pdf_excerpt"]:
