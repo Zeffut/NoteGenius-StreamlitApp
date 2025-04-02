@@ -125,9 +125,7 @@ def new_conversation_page():
         for page in reader.pages:
             pdf_text += page.extract_text() or ""
         st.session_state["conversations"][new_conversation_name]["pdf_excerpt"] = pdf_text[:8000]
-        #st.rerun()
-        time.sleep(1)
-        st.switch_page(st.Page(new_conversation_name))
+        st.rerun()
 
 # Initialiser les conversations dans l'état de session
 if "conversations" not in st.session_state:
@@ -142,6 +140,7 @@ for conversation_name in st.session_state["conversations"].keys():
         page.__name__ = name  # Attribuer un nom unique à la fonction
         return page
     pages.append(generate_page(conversation_name))
+    st.switch_page(conversation_name)
 
 # Afficher la page principale si aucune navigation n'est active
 if "page" not in st.session_state:
