@@ -32,8 +32,8 @@ def main_page():
             pdf_text += page.extract_text() or ""
         st.session_state["conversations"][new_conversation_name]["pdf_excerpt"] = pdf_text[:8000]
         # Rediriger vers la nouvelle conversation
-        st.experimental_set_query_params(page=new_conversation_name)
-        st.experimental_rerun()
+        st.session_state["page"] = new_conversation_name
+        st.rerun()
 
 # Fonction pour créer une page de conversation
 def create_conversation_page(conversation_name):
@@ -125,7 +125,7 @@ def new_conversation_page():
         for page in reader.pages:
             pdf_text += page.extract_text() or ""
         st.session_state["conversations"][new_conversation_name]["pdf_excerpt"] = pdf_text[:8000]
-        st.query_params(page=new_conversation_name)
+        st.switch_page(new_conversation_name)
         st.rerun()
 
 # Initialiser les conversations dans l'état de session
@@ -133,7 +133,7 @@ if "conversations" not in st.session_state:
     st.session_state["conversations"] = {}
 
 # Créer une page pour chaque conversation avec un nom unique
-pages = []
+pages = [new_conversation_page]
 for conversation_name in st.session_state["conversations"].keys():
     def generate_page(name):
         def page():
@@ -143,10 +143,9 @@ for conversation_name in st.session_state["conversations"].keys():
     pages.append(generate_page(conversation_name))
 
 # Afficher la page principale si aucune navigation n'est active
-query_params = st.query_params()
-if "page" in query_params:
-    page_name = query_params["page"][0]
-    if page_name in st.session_state["conversations"]:
-        create_conversation_page(page_name)
-else:
+if "page" not in st.session_state:
     main_page()
+else:
+    # Configuration de la navigation
+    pg = st.navigation(pages)
+    pg.run()
