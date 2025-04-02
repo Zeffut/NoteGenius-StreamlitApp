@@ -3,7 +3,7 @@ import openai
 import os
 
 # Configurez votre clé API OpenAI
-openai.api_key = "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"
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 if not openai.api_key:
     st.error("Clé API OpenAI non définie. Veuillez la définir dans la variable d'environnement OPENAI_API_KEY.")
     st.stop()
