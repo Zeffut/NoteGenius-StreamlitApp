@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import time  # ajout de l'import pour simuler la lecture des PDF
 
 from langchain.chat_models import ChatOpenAI
 
@@ -12,6 +13,11 @@ pdf_files = st.file_uploader("Chargez vos fichiers PDF de votre cours", type="pd
 if not pdf_files:
     st.warning("Veuillez charger les fichiers PDF de votre cours afin de pouvoir discuter avec le chat.")
     st.stop()
+
+# Ajouter un spinner pendant la lecture des PDF et la préparation de la requête initiale
+with st.spinner("Lecture des fichiers PDF et préparation de la première requête..."):
+    # ...traitement des PDF, par exemple extraire leur contenu...
+    time.sleep(2)  # simulation de lecture et traitement
 
 if "messages" not in st.session_state:
     st.session_state["messages"] = [
