@@ -96,7 +96,7 @@ def new_conversation_page():
             "messages": [],
             "pdf_excerpt": ""
         }
-        st.experimental_rerun()
+        st.rerun()
 
 pages.insert(0, new_conversation_page)
 
