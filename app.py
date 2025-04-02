@@ -11,7 +11,29 @@ openai_api_key = os.environ.get("OPENAI_API_KEY")
 # Page principale
 def main_page():
     st.title("Bienvenue sur NoteGenius")
-    st.write("Utilisez la barre de navigation pour créer ou accéder à vos conversations.")
+    st.write("Chargez vos fichiers PDF pour commencer une nouvelle conversation.")
+
+    # Zone d'importation des fichiers PDF
+    pdf_files = st.file_uploader(
+        "Chargez vos fichiers PDF de votre cours", type="pdf", accept_multiple_files=True
+    )
+    if pdf_files and st.button("Créer une conversation"):
+        # Utiliser le nom du premier fichier PDF comme nom de la conversation
+        first_pdf_name = pdf_files[0].name
+        new_conversation_name = first_pdf_name
+        st.session_state["conversations"][new_conversation_name] = {
+            "messages": [],
+            "pdf_excerpt": ""
+        }
+        # Charger le contenu du premier fichier PDF
+        pdf_text = ""
+        reader = PyPDF2.PdfReader(pdf_files[0])
+        for page in reader.pages:
+            pdf_text += page.extract_text() or ""
+        st.session_state["conversations"][new_conversation_name]["pdf_excerpt"] = pdf_text[:8000]
+        # Rediriger vers la nouvelle conversation
+        st.session_state["page"] = new_conversation_name
+        st.experimental_rerun()
 
 # Fonction pour créer une page de conversation
 def create_conversation_page(conversation_name):
