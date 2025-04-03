@@ -139,8 +139,9 @@ for conversation_name in st.session_state["conversations"].keys():
             create_conversation_page(name)
         page.__name__ = name  # Attribuer un nom unique à la fonction
         return page
-    pages.append(generate_page(conversation_name))
-    st.switch_page(conversation_name)
+    new_page = generate_page(conversation_name)
+    pages.append(new_page)
+    st.switch_page(new_page)
 
 # Afficher la page principale si aucune navigation n'est active
 if "page" not in st.session_state:
