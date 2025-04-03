@@ -141,7 +141,7 @@ for conversation_name in st.session_state["conversations"].keys():
         return page
     a = generate_page(conversation_name)
     pages.append(a)
-    st.switch_page(a.__name__)
+    st.switch_page(st.Page(a))
 
 # Afficher la page principale si aucune navigation n'est active
 if "page" not in st.session_state:
